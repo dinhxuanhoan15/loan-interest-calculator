@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Tính lãi tiền vay</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Tính lãi tín dụng</p>
+          <h1>Máy tính lãi tiền vay</h1>
+        </div>
+      </header>
+
+      <main class="screen">
+        <section class="card">
+          <h2>1. Thông tin khoản vay</h2>
+
+          <div class="form-grid">
+            <label class="field">
+              <span>Số tiền vay (VNĐ)</span>
+              <input id="principal" type="number" min="0" step="1000" />
+            </label>
+
+            <label class="field">
+              <span>Lãi suất (%/năm)</span>
+              <input id="rate" type="number" min="0" step="0.01" />
+            </label>
+
+            <label class="field">
+              <span>Ngày bắt đầu tính lãi</span>
+              <input id="startDate" type="date" />
+            </label>
+
+            <label class="field">
+              <span>Ngày kết thúc tính lãi</span>
+              <input id="endDate" type="date" />
+            </label>
+
+            <label class="field">
+              <span>Số kỳ cần tính (tuỳ chọn)</span>
+              <input id="periodCount" type="number" min="1" step="1" />
+            </label>
+
+            <label class="field">
+              <span>Ngày đến hạn hàng tháng</span>
+              <select id="dueDayMode">
+                <option value="day">Chọn ngày</option>
+                <option value="lastDay">Ngày cuối tháng</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Ngày trong tháng</span>
+              <select id="dueDay"></select>
+            </label>
+
+            <label class="field">
+              <span>Cơ sở tính lãi</span>
+              <select id="basis">
+                <option value="Actual/365">Actual/365</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span>Quy tắc ngày nghỉ</span>
+              <select id="holidayRule">
+                <option value="next_working">Chuyển sang ngày làm việc đầu tiên tiếp theo</option>
+                <option value="none">Không điều chỉnh ngày nghỉ</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button id="calculateBtn" class="primary-btn">TÍNH LÃI</button>
+            <button id="clearBtn" class="secondary-btn" type="button">XÓA</button>
+            <button id="exportBtn" class="ghost-btn" type="button">XUẤT KẾT QUẢ</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="section-header">
+            <h2>2. Quản lý lịch nghỉ</h2>
+            <button id="addHolidayBtn" class="mini-btn" type="button">+ Thêm ngày nghỉ</button>
+          </div>
+
+          <div id="holidayList" class="holiday-list"></div>
+        </section>
+
+        <section class="card">
+          <div class="summary-bar">
+            <div>
+              <span>Tổng số ngày</span>
+              <strong id="totalDays">0</strong>
+            </div>
+            <div>
+              <span>Tổng tiền lãi</span>
+              <strong id="totalInterest">0 VNĐ</strong>
+            </div>
+            <div>
+              <span>Tổng gốc + lãi</span>
+              <strong id="totalPrincipalPlusInterest">0 VNĐ</strong>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Kỳ</th>
+                  <th>Từ ngày</th>
+                  <th>Đến hạn theo lịch</th>
+                  <th>Ngày nghỉ?</th>
+                  <th>Đến hạn thực tế</th>
+                  <th>Số ngày</th>
+                  <th>Dư nợ</th>
+                  <th>Lãi suất</th>
+                  <th>Tiền lãi</th>
+                </tr>
+              </thead>
+              <tbody id="scheduleBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <button id="toggleExplainBtn" class="toggle-btn" type="button">Xem cách tính</button>
+
+          <div id="explainPanel" class="explain-panel">
+            <h3>📌 CÁCH TÍNH LÃI</h3>
+            <p class="formula-line">Tiền lãi = Dư nợ × Lãi suất năm × Số ngày tính lãi ÷ 365</p>
+            <ul class="formula-list">
+              <li><strong>Dư nợ:</strong> số tiền dùng để tính lãi.</li>
+              <li><strong>Lãi suất năm:</strong> lãi suất nhập theo %/năm.</li>
+              <li><strong>Số ngày tính lãi:</strong> số ngày thực tế theo quy tắc đã chọn.</li>
+              <li><strong>365:</strong> số ngày quy ước trong công thức Actual/365.</li>
+            </ul>
+
+            <p class="note">
+              Lưu ý: Nếu ngày đến hạn rơi vào thứ Bảy, Chủ nhật hoặc ngày nghỉ đã được thiết lập,
+              ứng dụng sẽ điều chỉnh sang ngày làm việc tiếp theo theo quy tắc đã chọn.
+            </p>
+
+            <div id="exampleFormula" class="example-box"></div>
+
+            <div class="adjustment-box">
+              <h4>Chi tiết điều chỉnh ngày:</h4>
+              <div id="adjustmentDetails"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="holidayModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="holidayModalTitle">Thêm ngày nghỉ</h3>
+          <button class="close-btn" id="closeHolidayModalBtn" type="button">×</button>
+        </div>
+
+        <form id="holidayForm">
+          <label class="field">
+            <span>Ngày</span>
+            <input id="holidayDate" type="date" required />
+          </label>
+
+          <label class="field">
+            <span>Tên ngày nghỉ</span>
+            <input id="holidayName" type="text" placeholder="Ví dụ: Tết Dương lịch" required />
+          </label>
+
+          <label class="field">
+            <span>Loại ngày nghỉ</span>
+            <select id="holidayType">
+              <option value="Lễ quốc gia">Lễ quốc gia</option>
+              <option value="Tết">Tết</option>
+              <option value="Cuối tuần">Cuối tuần</option>
+              <option value="Đặc biệt">Đặc biệt</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span>Ghi chú</span>
+            <textarea id="holidayNote" rows="3" placeholder="Ghi chú thêm nếu cần"></textarea>
+          </label>
+
+          <div class="modal-actions">
+            <button id="saveHolidayBtn" class="primary-btn" type="submit">Lưu</button>
+            <button id="cancelHolidayBtn" class="ghost-btn" type="button">Huỷ</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
